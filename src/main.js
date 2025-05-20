@@ -67,11 +67,12 @@ const crawler = new HttpCrawler({
                 const data2 = JSON.parse(data[0][2]);
                 const prices = (data2[2][21] || []).map(row => ({
                     provider: row[0][0],
+                    otaUrl: row[0][2],
                     isOfficial: row[0][5],
                     price: parseInt(row[12][4][2]),
                     price2: parseInt(row[12][5][2]),
                 }));
-                //log.info('data2[1]', data2[1])
+                log.info('data2[2][21][0]', data2[2][21][0])
                 log.info('prices', prices)
                 await Dataset.pushData({ prices, currency: data2[1][3], checkInDate: data2[1][4][0].join('-'), checkOutDate: data2[1][4][1].join('-') })
             } else {
