@@ -9,6 +9,7 @@ await Actor.init();
 const defaultInput = {
     checkInDate: '2025-05-25',
     days: 1,
+    adults: 2,
     currency: 'JPY',
     entity: 'CgsIx6il8vyxnYHRARAB',
     proxyConfig: {
@@ -21,7 +22,7 @@ const defaultInput = {
 
 const input = await Actor.getInput();
 // const input = defaultInput; // for local development
-if (!input || !input.checkInDate || !input.days || !input.currency || !input.entity || !input.proxyConfig) {
+if (!input || !input.checkInDate || !input.days || !input.adults || !input.currency || !input.entity || !input.proxyConfig) {
     throw new Error('Missing required input fields.');
 }
 
@@ -44,7 +45,7 @@ const requests = [];
 
 for (const checkInCheckOut of checkInCheckOuts) {
     requests.push({
-        url: `https://www.google.com/_/TravelFrontendUi/data/batchexecute?source-path=%2Ftravel%2Fhotels%2Fentity%2F${input.entity}%2Fprices&hl=en&rt=c&f.req=%5B%5B%5B%22M0CRd%22,%22%5Bnull,%5Bnull,null,null,%5C%22${input.currency}%5C%22,%5B%5B${checkInCheckOut.start}%5D,%5B${checkInCheckOut.end}%5D,1,1%5D%5D,%5B1,%5C%22%5C%22,2%5D,%5C%22${input.entity}%5C%22,%5Bnull,null,null,null,null,null,null,null,null,null,null,null,null,%5B%5C%22%5C%22%5D%5D,1,2%5D%22,null,%22generic%22%5D%5D%5D`,
+        url: `https://www.google.com/_/TravelFrontendUi/data/batchexecute?source-path=%2Ftravel%2Fhotels%2Fentity%2F${input.entity}%2Fprices&hl=en&rt=c&f.req=%5B%5B%5B%22M0CRd%22,%22%5Bnull,%5Bnull,null,null,%5C%22${input.currency}%5C%22,%5B%5B${checkInCheckOut.start}%5D,%5B${checkInCheckOut.end}%5D,1,null,0%5D,null,null,null,null,null,null,null,null,%5B${input.adults},null,2%5D%5D,%5B1,null,1%5D,%5C%22${input.entity}%5C%22,%5Bnull,null,null,null,null,null,null,null,null,null,null,null,null,%5B%5C%22%5C%22%5D%5D,1,1%5D%22,null,%22generic%22%5D%5D%5D`,
         method: 'POST',
         // The rest of headers are filled by Crawlee
         headers: {
@@ -74,10 +75,11 @@ const crawler = new HttpCrawler({
                 }));
                 log.info('data2[2][21][0]', data2[2][21][0])
                 log.info('prices', prices)
-                await Dataset.pushData({ prices, currency: data2[1][3], checkInDate: data2[1][4][0].join('-'), checkOutDate: data2[1][4][1].join('-') })
+                await Dataset.pushData({ prices, adults: input.adults, currency: data2[1][3], checkInDate: data2[1][4][0].join('-'), checkOutDate: data2[1][4][1].join('-') })
             } else {
                 log.error('No target line found in the response');
             }
+            // await Actor.setValue('BODY', output)
         } catch (error) {
             log.error('Error parsing JSON:', error);
         }
